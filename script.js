@@ -6,27 +6,33 @@ const searchInput = document.getElementById('search-input');
 const searchButton = document.getElementById('search-button');
 const loadingMessage = document.getElementById('loading-message');
 const loadMoreButton = document.getElementById('load-more-button');
+const categoryButtons = document.querySelectorAll('.cat-btn');
 
 // State variables
 let currentQuery = '';
+let currentCategory = 'top'; // Default category
 let nextPageToken = null;
 
-// Fetch news function (handles initial load and pagination)
-async function fetchNews(query = '', isPagination = false) {
+// Fetch news function
+async function fetchNews(query = '', category = 'top', isPagination = false) {
     if (!isPagination) {
         loadingMessage.style.display = 'block';
-        newsContainer.innerHTML = ''; // Clear previous news
+        newsContainer.innerHTML = '';
         nextPageToken = null;
         loadMoreButton.style.display = 'none';
     }
     
     let url = `${BASE_URL}?apikey=${API_KEY}&language=en`;
     
+    // Add category parameter
+    if (category && category !== 'top') {
+        url += `&category=${category}`;
+    }
+
     if (query) {
         url += `&q=${encodeURIComponent(query)}`;
     }
     
-    // If we have a page token, use it for pagination
     if (isPagination && nextPageToken) {
         url += `&page=${nextPageToken}`;
     }
@@ -37,11 +43,8 @@ async function fetchNews(query = '', isPagination = false) {
 
         if (data.status === 'success') {
             displayNews(data.results);
-            
-            // Update the next page token
             nextPageToken = data.nextPage;
             
-            // Show load more button if there is a next page
             if (nextPageToken) {
                 loadMoreButton.style.display = 'inline-block';
             } else {
@@ -58,7 +61,7 @@ async function fetchNews(query = '', isPagination = false) {
     }
 }
 
-// Display news cards
+// Display news cards (same as before)
 function displayNews(articles) {
     if (articles.length === 0 && newsContainer.innerHTML === '') {
         newsContainer.innerHTML = '<p>No results found.</p>';
@@ -66,7 +69,6 @@ function displayNews(articles) {
     }
 
     articles.forEach(article => {
-        // Optional: Filter out articles without images
         if (!article.image_url) return;
 
         const card = document.createElement('div');
@@ -88,19 +90,35 @@ function displayNews(articles) {
 // Search functionality
 searchButton.addEventListener('click', () => {
     currentQuery = searchInput.value;
-    fetchNews(currentQuery, false);
+    // When searching, we usually want to clear category or search across all
+    fetchNews(currentQuery, '', false);
 });
 
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         currentQuery = searchInput.value;
-        fetchNews(currentQuery, false);
+        fetchNews(currentQuery, '', false);
     }
+});
+
+// Category Bar Functionality
+categoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // Update active button state
+        document.querySelector('.cat-btn.active').classList.remove('active');
+        button.classList.add('active');
+
+        // Fetch news for category
+        currentCategory = button.getAttribute('data-category');
+        currentQuery = ''; // Clear search input when switching categories
+        searchInput.value = '';
+        fetchNews(currentQuery, currentCategory, false);
+    });
 });
 
 // Load more functionality
 loadMoreButton.addEventListener('click', () => {
-    fetchNews(currentQuery, true);
+    fetchNews(currentQuery, currentCategory, true);
 });
 
 // Initial load
