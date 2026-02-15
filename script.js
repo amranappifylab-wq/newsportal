@@ -62,6 +62,9 @@ async function fetchNews(query = '', category = 'top', isPagination = false) {
 }
 
 // Display news cards (same as before)
+// ... (previous code remains the same)
+
+// Display news cards
 function displayNews(articles) {
     if (articles.length === 0 && newsContainer.innerHTML === '') {
         newsContainer.innerHTML = '<p>No results found.</p>';
@@ -69,13 +72,15 @@ function displayNews(articles) {
     }
 
     articles.forEach(article => {
+        // Optional: Filter out articles without images
+        // If you want to show articles even without images, remove the if statement below.
         if (!article.image_url) return;
 
         const card = document.createElement('div');
         card.className = 'news-card';
 
         card.innerHTML = `
-            <img src="${article.image_url}" alt="News Image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+            <img src="${article.image_url}" alt="News Image" onerror="this.onerror=null; this.src=''; this.classList.add('image-failed');">
             <div class="card-content">
                 <h2>${article.title}</h2>
                 <p>${article.description ? article.description.substring(0, 100) + '...' : ''}</p>
@@ -86,6 +91,8 @@ function displayNews(articles) {
         newsContainer.appendChild(card);
     });
 }
+
+// ... (rest of the code)
 
 // Search functionality
 searchButton.addEventListener('click', () => {
