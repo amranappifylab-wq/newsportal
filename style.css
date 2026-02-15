@@ -153,3 +153,47 @@ header {
     background-color: #ccc; /* Slightly darker gray to indicate failure */
     content: ''; /* Hides the broken image icon in some browsers */
 }
+/* ... Previous CSS ... */
+
+.category-bar {
+    background-color: #fff;
+    padding: 0.5rem;
+    display: flex;
+    justify-content: flex-start; /* Align to left to allow horizontal scroll */
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+    
+    /* FIXES FOR MOBILE */
+    position: sticky;
+    top: 60px; /* Adjust based on your header height */
+    z-index: 999;
+    
+    /* Enables horizontal scrolling without minimizing */
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    
+    /* Ensure it takes full width */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Hide scrollbar for a cleaner look (optional) */
+.category-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-btn {
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    
+    /* Prevents buttons from shrinking */
+    flex-shrink: 0; 
+    
+    transition: background 0.3s;
+}
+
+/* ... Rest of CSS ... */
