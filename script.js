@@ -5,15 +5,30 @@ const newsContainer = document.getElementById('news-container');
 const searchInput = document.getElementById('search-input');
 const searchButton = document.getElementById('search-button');
 const loadingMessage = document.getElementById('loading-message');
+const loadMoreButton = document.getElementById('load-more-button');
 
-// Fetch news function
-async function fetchNews(query = '') {
-    loadingMessage.style.display = 'block';
-    newsContainer.innerHTML = ''; // Clear previous news
+// State variables
+let currentQuery = '';
+let nextPageToken = null;
+
+// Fetch news function (handles initial load and pagination)
+async function fetchNews(query = '', isPagination = false) {
+    if (!isPagination) {
+        loadingMessage.style.display = 'block';
+        newsContainer.innerHTML = ''; // Clear previous news
+        nextPageToken = null;
+        loadMoreButton.style.display = 'none';
+    }
     
     let url = `${BASE_URL}?apikey=${API_KEY}&language=en`;
+    
     if (query) {
         url += `&q=${encodeURIComponent(query)}`;
+    }
+    
+    // If we have a page token, use it for pagination
+    if (isPagination && nextPageToken) {
+        url += `&page=${nextPageToken}`;
     }
 
     try {
@@ -22,6 +37,16 @@ async function fetchNews(query = '') {
 
         if (data.status === 'success') {
             displayNews(data.results);
+            
+            // Update the next page token
+            nextPageToken = data.nextPage;
+            
+            // Show load more button if there is a next page
+            if (nextPageToken) {
+                loadMoreButton.style.display = 'inline-block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
         } else {
             newsContainer.innerHTML = '<p>Error fetching news. Please check your API key.</p>';
         }
@@ -35,13 +60,13 @@ async function fetchNews(query = '') {
 
 // Display news cards
 function displayNews(articles) {
-    if (articles.length === 0) {
+    if (articles.length === 0 && newsContainer.innerHTML === '') {
         newsContainer.innerHTML = '<p>No results found.</p>';
         return;
     }
 
     articles.forEach(article => {
-        // Only show articles with images for better UI
+        // Optional: Filter out articles without images
         if (!article.image_url) return;
 
         const card = document.createElement('div');
@@ -62,15 +87,20 @@ function displayNews(articles) {
 
 // Search functionality
 searchButton.addEventListener('click', () => {
-    const query = searchInput.value;
-    fetchNews(query);
+    currentQuery = searchInput.value;
+    fetchNews(currentQuery, false);
 });
 
-// Allow pressing Enter to search
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        fetchNews(searchInput.value);
+        currentQuery = searchInput.value;
+        fetchNews(currentQuery, false);
     }
+});
+
+// Load more functionality
+loadMoreButton.addEventListener('click', () => {
+    fetchNews(currentQuery, true);
 });
 
 // Initial load
